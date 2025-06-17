@@ -1,1 +1,127 @@
-a
+¡Perfecto que ya esté funcionando la parte de la búsqueda! 👏 Ahora vamos a resolver lo del autocompletado visual, ya que Geoapify no lo hace automáticamente como Google Places o Algolia. Pero no te preocupes: podemos construirlo fácilmente con JavaScript y un poco de HTML.
+
+
+---
+
+🎯 Meta:
+
+Cuando el usuario escriba en el campo, se despliegue una lista de sugerencias justo debajo, como en Amazon o Mercado Libre.
+
+
+---
+
+✅ Versión funcional con autocompletado visual (dropdown)
+
+Aquí tienes una versión completa que sí muestra sugerencias debajo del input, con el filtro limitado a Oaxaca:
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Autocompletado Oaxaca con Geoapify</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 30px;
+    }
+    #autocomplete {
+      width: 100%;
+      max-width: 400px;
+      padding: 8px;
+    }
+    #sugerencias {
+      list-style: none;
+      padding: 0;
+      margin-top: 0;
+      border: 1px solid #ccc;
+      max-width: 400px;
+      position: absolute;
+      background: white;
+      z-index: 10;
+    }
+    #sugerencias li {
+      padding: 8px;
+      cursor: pointer;
+    }
+    #sugerencias li:hover {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Buscar municipio o localidad en Oaxaca</h2>
+  <input type="text" id="autocomplete" placeholder="Escribe tu municipio o pueblo..." autocomplete="off" />
+  <ul id="sugerencias"></ul>
+
+  <!-- Campos ocultos para guardar coordenadas -->
+  <input type="hidden" id="latitud" name="latitud">
+  <input type="hidden" id="longitud" name="longitud">
+
+  <script>
+    const input = document.getElementById('autocomplete');
+    const sugerencias = document.getElementById('sugerencias');
+    const API_KEY = 'TU_API_KEY_AQUI'; // Reemplaza con tu API real
+
+    input.addEventListener('input', async () => {
+      const valor = input.value.trim();
+
+      if (valor.length < 3) {
+        sugerencias.innerHTML = '';
+        return;
+      }
+
+      const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(valor)}&filter=rect:-98.7,14.5,-93.9,18.1&lang=es&limit=5&apiKey=${API_KEY}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      sugerencias.innerHTML = '';
+
+      data.features.forEach(lugar => {
+        const li = document.createElement('li');
+        li.textContent = lugar.properties.formatted;
+
+        li.addEventListener('click', () => {
+          input.value = lugar.properties.formatted;
+          document.getElementById('latitud').value = lugar.properties.lat;
+          document.getElementById('longitud').value = lugar.properties.lon;
+          sugerencias.innerHTML = '';
+        });
+
+        sugerencias.appendChild(li);
+      });
+    });
+
+    // Cerrar sugerencias si se hace clic fuera
+    document.addEventListener('click', e => {
+      if (!sugerencias.contains(e.target) && e.target !== input) {
+        sugerencias.innerHTML = '';
+      }
+    });
+  </script>
+
+</body>
+</html>
+
+
+---
+
+🧠 Qué hace este código
+
+Muestra sugerencias mientras escribes.
+
+Al hacer clic en una sugerencia:
+
+Llena el input con el nombre completo.
+
+Guarda latitud y longitud en campos ocultos (#latitud, #longitud).
+
+
+Las sugerencias desaparecen si haces clic fuera.
+
+
+
+---
+
+¿Quieres que te lo prepare en archivo descargable .html o prefieres integrarlo ya a tu sistema con el resto del formulario completo (como login o registro de desechador)?
